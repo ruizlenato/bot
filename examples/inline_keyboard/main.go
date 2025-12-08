@@ -17,7 +17,7 @@ func main() {
 
 	opts := []bot.Option{
 		bot.WithDefaultHandler(defaultHandler),
-		bot.WithCallbackQueryDataHandler("button", bot.MatchTypePrefix, callbackHandler),
+		bot.WithCallbackQueryDataHandler("button", callbackHandler),
 	}
 
 	b, err := bot.New(os.Getenv("EXAMPLE_TELEGRAM_BOT_TOKEN"), opts...)

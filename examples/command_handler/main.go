@@ -10,7 +10,6 @@ import (
 )
 
 // Send any text message to the bot after the bot has been started
-
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
@@ -26,8 +25,11 @@ func main() {
 		panic(err)
 	}
 
-	b.RegisterHandler(bot.HandlerTypeMessageText, "foo", bot.MatchTypeCommand, fooHandler)
-	b.RegisterHandler(bot.HandlerTypeMessageText, "bar", bot.MatchTypeCommandStartOnly, barHandler)
+	// Handler with /foo command at the start of the message
+	b.RegisterHandler(bot.HandlerTypeCommand, "foo", fooHandler)
+
+	// Handler with /bar command anywhere in the message
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/bar", barHandler)
 
 	b.Start(ctx)
 }

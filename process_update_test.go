@@ -114,12 +114,11 @@ func Test_findHandler(t *testing.T) {
 		defaultHandlerFunc: h,
 	}
 
-	// Register a handler
+	// Register a handler - removed matchType field, pattern is now any (string with regex)
 	bot.handlers = append(bot.handlers, handler{
 		id:          "test",
 		handlerType: HandlerTypeMessageText,
-		matchType:   MatchTypeExact,
-		pattern:     "test",
+		pattern:     "^test$", // Use regex for exact match
 		handler:     h,
 	})
 
@@ -144,12 +143,11 @@ func Test_findPhotoCaptionHandler(t *testing.T) {
 		defaultHandlerFunc: h,
 	}
 
-	// Register a handler
+	// Register a handler - removed matchType field, pattern is now any (string with regex)
 	bot.handlers = append(bot.handlers, handler{
 		id:          "test",
 		handlerType: HandlerTypePhotoCaption,
-		matchType:   MatchTypeExact,
-		pattern:     "test",
+		pattern:     "^test$", // Use regex for exact match
 		handler:     h,
 	})
 

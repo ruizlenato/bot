@@ -19,8 +19,8 @@ func main() {
 	defer cancel()
 
 	opts := []bot.Option{
-		bot.WithMessageTextHandler("/select", bot.MatchTypeExact, commandHandler),
-		bot.WithCallbackQueryDataHandler("btn_", bot.MatchTypePrefix, callbackHandler),
+		bot.WithCommandHandler("select", commandHandler),
+		bot.WithCallbackQueryDataHandler("^btn_", callbackHandler),
 	}
 
 	b, err := bot.New(os.Getenv("EXAMPLE_TELEGRAM_BOT_TOKEN"), opts...)

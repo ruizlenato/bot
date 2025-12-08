@@ -27,7 +27,7 @@ func main() {
 
 	opts := []bot.Option{
 		bot.WithDefaultHandler(handler),
-		bot.WithMessageTextHandler("/payment", bot.MatchTypeExact, handlerPaymentCommand),
+		bot.WithCommandHandler("payment", handlerPaymentCommand),
 	}
 
 	b, _ := bot.New(os.Getenv("EXAMPLE_TELEGRAM_BOT_TOKEN"), opts...)

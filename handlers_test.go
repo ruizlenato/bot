@@ -47,7 +47,8 @@ func Test_match_func(t *testing.T) {
 func Test_match_exact(t *testing.T) {
 	b := &Bot{}
 
-	id := b.RegisterHandler(HandlerTypeMessageText, "xxx", MatchTypeExact, nil)
+	// Use regex for exact match
+	id := b.RegisterHandler(HandlerTypeMessageText, "^xxx$", nil)
 
 	h := findHandler(b, id)
 
@@ -65,7 +66,8 @@ func Test_match_exact(t *testing.T) {
 func Test_match_caption_exact(t *testing.T) {
 	b := &Bot{}
 
-	id := b.RegisterHandler(HandlerTypePhotoCaption, "xxx", MatchTypeExact, nil)
+	// Use regex for exact match
+	id := b.RegisterHandler(HandlerTypePhotoCaption, "^xxx$", nil)
 
 	h := findHandler(b, id)
 
@@ -83,7 +85,8 @@ func Test_match_caption_exact(t *testing.T) {
 func Test_match_prefix(t *testing.T) {
 	b := &Bot{}
 
-	id := b.RegisterHandler(HandlerTypeCallbackQueryData, "abc", MatchTypePrefix, nil)
+	// Use regex for prefix match
+	id := b.RegisterHandler(HandlerTypeCallbackQueryData, "^abc", nil)
 
 	h := findHandler(b, id)
 
@@ -101,7 +104,8 @@ func Test_match_prefix(t *testing.T) {
 func Test_match_contains(t *testing.T) {
 	b := &Bot{}
 
-	id := b.RegisterHandler(HandlerTypeCallbackQueryData, "abc", MatchTypeContains, nil)
+	// String pattern uses contains matching
+	id := b.RegisterHandler(HandlerTypeCallbackQueryData, "abc", nil)
 
 	h := findHandler(b, id)
 
@@ -119,9 +123,10 @@ func Test_match_contains(t *testing.T) {
 func Test_match_regexp(t *testing.T) {
 	b := &Bot{}
 
-	re := regexp.MustCompile("^[a-z]+")
+	re := regexp.MustCompile("^[a-z]+$")
 
-	id := b.RegisterHandlerRegexp(HandlerTypeCallbackQueryData, re, nil)
+	// Pass *regexp.Regexp directly as pattern
+	id := b.RegisterHandler(HandlerTypeCallbackQueryData, re, nil)
 
 	h := findHandler(b, id)
 
@@ -139,7 +144,7 @@ func Test_match_regexp(t *testing.T) {
 func Test_match_invalid_type(t *testing.T) {
 	b := &Bot{}
 
-	id := b.RegisterHandler(-1, "", -1, nil)
+	id := b.RegisterHandler(-1, "", nil)
 
 	h := findHandler(b, id)
 
@@ -152,8 +157,8 @@ func Test_match_invalid_type(t *testing.T) {
 func TestBot_RegisterUnregisterHandler(t *testing.T) {
 	b := &Bot{}
 
-	id1 := b.RegisterHandler(HandlerTypeCallbackQueryData, "", MatchTypeExact, nil)
-	id2 := b.RegisterHandler(HandlerTypeCallbackQueryData, "", MatchTypeExact, nil)
+	id1 := b.RegisterHandler(HandlerTypeCallbackQueryData, "", nil)
+	id2 := b.RegisterHandler(HandlerTypeCallbackQueryData, "", nil)
 
 	if len(b.handlers) != 2 {
 		t.Fatalf("unexpected handlers len")
@@ -180,7 +185,8 @@ func TestBot_RegisterUnregisterHandler(t *testing.T) {
 func Test_match_exact_game(t *testing.T) {
 	b := &Bot{}
 
-	id := b.RegisterHandler(HandlerTypeCallbackQueryGameShortName, "xxx", MatchTypeExact, nil)
+	// Use regex for exact match
+	id := b.RegisterHandler(HandlerTypeCallbackQueryGameShortName, "^xxx$", nil)
 
 	h := findHandler(b, id)
 	u := models.Update{
@@ -193,15 +199,16 @@ func Test_match_exact_game(t *testing.T) {
 
 	res := h.match(&u)
 	if !res {
-		t.Error("unexpected true result")
+		t.Error("unexpected false result")
 	}
 }
 
-func Test_match_command_start(t *testing.T) {
-	t.Run("anywhere 1, yes", func(t *testing.T) {
+func Test_match_command(t *testing.T) {
+	t.Run("command at start, yes", func(t *testing.T) {
 		b := &Bot{}
 
-		id := b.RegisterHandler(HandlerTypeMessageText, "foo", MatchTypeCommand, nil)
+		// Use HandlerTypeCommand for command matching
+		id := b.RegisterHandler(HandlerTypeCommand, "foo", nil)
 
 		h := findHandler(b, id)
 		u := models.Update{
@@ -220,76 +227,10 @@ func Test_match_command_start(t *testing.T) {
 		}
 	})
 
-	t.Run("anywhere 2, yes", func(t *testing.T) {
+	t.Run("command not at start, no", func(t *testing.T) {
 		b := &Bot{}
 
-		id := b.RegisterHandler(HandlerTypeMessageText, "foo", MatchTypeCommand, nil)
-
-		h := findHandler(b, id)
-		u := models.Update{
-			ID: 42,
-			Message: &models.Message{
-				Text: "a /foo",
-				Entities: []models.MessageEntity{
-					{Type: models.MessageEntityTypeBotCommand, Offset: 2, Length: 4},
-				},
-			},
-		}
-
-		res := h.match(&u)
-		if !res {
-			t.Error("unexpected result")
-		}
-	})
-
-	t.Run("anywhere 3, no", func(t *testing.T) {
-		b := &Bot{}
-
-		id := b.RegisterHandler(HandlerTypeMessageText, "foo", MatchTypeCommand, nil)
-
-		h := findHandler(b, id)
-		u := models.Update{
-			ID: 42,
-			Message: &models.Message{
-				Text: "a /bar",
-				Entities: []models.MessageEntity{
-					{Type: models.MessageEntityTypeBotCommand, Offset: 2, Length: 4},
-				},
-			},
-		}
-
-		res := h.match(&u)
-		if res {
-			t.Error("unexpected result")
-		}
-	})
-
-	t.Run("start 1, yes", func(t *testing.T) {
-		b := &Bot{}
-
-		id := b.RegisterHandler(HandlerTypeMessageText, "foo", MatchTypeCommandStartOnly, nil)
-
-		h := findHandler(b, id)
-		u := models.Update{
-			ID: 42,
-			Message: &models.Message{
-				Text: "/foo",
-				Entities: []models.MessageEntity{
-					{Type: models.MessageEntityTypeBotCommand, Offset: 0, Length: 4},
-				},
-			},
-		}
-
-		res := h.match(&u)
-		if !res {
-			t.Error("unexpected result")
-		}
-	})
-
-	t.Run("start 2, no", func(t *testing.T) {
-		b := &Bot{}
-
-		id := b.RegisterHandler(HandlerTypeMessageText, "foo", MatchTypeCommandStartOnly, nil)
+		id := b.RegisterHandler(HandlerTypeCommand, "foo", nil)
 
 		h := findHandler(b, id)
 		u := models.Update{
@@ -304,14 +245,14 @@ func Test_match_command_start(t *testing.T) {
 
 		res := h.match(&u)
 		if res {
-			t.Error("unexpected result")
+			t.Error("unexpected result - commands should only match at start")
 		}
 	})
 
-	t.Run("start 3, no", func(t *testing.T) {
+	t.Run("wrong command, no", func(t *testing.T) {
 		b := &Bot{}
 
-		id := b.RegisterHandler(HandlerTypeMessageText, "foo", MatchTypeCommandStartOnly, nil)
+		id := b.RegisterHandler(HandlerTypeCommand, "foo", nil)
 
 		h := findHandler(b, id)
 		u := models.Update{
@@ -319,13 +260,35 @@ func Test_match_command_start(t *testing.T) {
 			Message: &models.Message{
 				Text: "/bar",
 				Entities: []models.MessageEntity{
-					{Type: models.MessageEntityTypeBotCommand, Offset: 2, Length: 4},
+					{Type: models.MessageEntityTypeBotCommand, Offset: 0, Length: 4},
 				},
 			},
 		}
 
 		res := h.match(&u)
 		if res {
+			t.Error("unexpected result")
+		}
+	})
+
+	t.Run("command at start with args, yes", func(t *testing.T) {
+		b := &Bot{}
+
+		id := b.RegisterHandler(HandlerTypeCommand, "foo", nil)
+
+		h := findHandler(b, id)
+		u := models.Update{
+			ID: 42,
+			Message: &models.Message{
+				Text: "/foo arg1 arg2",
+				Entities: []models.MessageEntity{
+					{Type: models.MessageEntityTypeBotCommand, Offset: 0, Length: 4},
+				},
+			},
+		}
+
+		res := h.match(&u)
+		if !res {
 			t.Error("unexpected result")
 		}
 	})

@@ -11,37 +11,24 @@ type HandlerType int
 
 const (
 	HandlerTypeMessageText HandlerType = iota
+	HandlerTypeCommand
 	HandlerTypeCallbackQueryData
 	HandlerTypeCallbackQueryGameShortName
 	HandlerTypePhotoCaption
 )
 
-type MatchType int
-
-const (
-	MatchTypeExact MatchType = iota
-	MatchTypePrefix
-	MatchTypeContains
-	MatchTypeCommand
-	MatchTypeCommandStartOnly
-
-	matchTypeRegexp
-	matchTypeFunc
-)
-
 type handler struct {
 	id          string
 	handlerType HandlerType
-	matchType   MatchType
 	handler     HandlerFunc
 
-	pattern   string
+	pattern   any
 	re        *regexp.Regexp
 	matchFunc MatchFunc
 }
 
 func (h handler) match(update *models.Update) bool {
-	if h.matchType == matchTypeFunc {
+	if h.matchFunc != nil {
 		return h.matchFunc(update)
 	}
 
@@ -49,7 +36,7 @@ func (h handler) match(update *models.Update) bool {
 	var entities []models.MessageEntity
 
 	switch h.handlerType {
-	case HandlerTypeMessageText:
+	case HandlerTypeMessageText, HandlerTypeCommand:
 		if update.Message == nil {
 			return false
 		}
@@ -73,37 +60,43 @@ func (h handler) match(update *models.Update) bool {
 		entities = update.Message.CaptionEntities
 	}
 
-	if h.matchType == MatchTypeExact {
-		return data == h.pattern
-	}
-	if h.matchType == MatchTypePrefix {
-		return strings.HasPrefix(data, h.pattern)
-	}
-	if h.matchType == MatchTypeContains {
-		return strings.Contains(data, h.pattern)
-	}
-	if h.matchType == MatchTypeCommand {
-		for _, e := range entities {
-			if e.Type == models.MessageEntityTypeBotCommand {
-				if data[e.Offset+1:e.Offset+e.Length] == h.pattern {
-					return true
+	switch pattern := h.pattern.(type) {
+	case string:
+		if h.handlerType == HandlerTypeCommand {
+			for _, e := range entities {
+				if e.Type == models.MessageEntityTypeBotCommand {
+					if e.Offset == 0 && data[e.Offset+1:e.Offset+e.Length] == pattern {
+						return true
+					}
 				}
 			}
+			return false
 		}
+		p := regexp.MustCompile(pattern)
+		return p.MatchString(data) || strings.Contains(data, pattern)
+	case *regexp.Regexp:
+		return pattern.MatchString(data)
+	default:
+		return false
 	}
-	if h.matchType == MatchTypeCommandStartOnly {
-		for _, e := range entities {
-			if e.Type == models.MessageEntityTypeBotCommand {
-				if e.Offset == 0 && data[e.Offset+1:e.Offset+e.Length] == h.pattern {
-					return true
-				}
-			}
-		}
+}
+
+func (b *Bot) RegisterHandler(handlerType HandlerType, pattern any, f HandlerFunc, m ...Middleware) string {
+	b.handlersMx.Lock()
+	defer b.handlersMx.Unlock()
+
+	id := RandomString(16)
+
+	h := handler{
+		id:          id,
+		handlerType: handlerType,
+		pattern:     pattern,
+		handler:     applyMiddlewares(f, m...),
 	}
-	if h.matchType == matchTypeRegexp {
-		return h.re.Match([]byte(data))
-	}
-	return false
+
+	b.handlers = append(b.handlers, h)
+
+	return id
 }
 
 func (b *Bot) RegisterHandlerMatchFunc(matchFunc MatchFunc, f HandlerFunc, m ...Middleware) string {
@@ -114,47 +107,8 @@ func (b *Bot) RegisterHandlerMatchFunc(matchFunc MatchFunc, f HandlerFunc, m ...
 
 	h := handler{
 		id:        id,
-		matchType: matchTypeFunc,
 		matchFunc: matchFunc,
 		handler:   applyMiddlewares(f, m...),
-	}
-
-	b.handlers = append(b.handlers, h)
-
-	return id
-}
-
-func (b *Bot) RegisterHandlerRegexp(handlerType HandlerType, re *regexp.Regexp, f HandlerFunc, m ...Middleware) string {
-	b.handlersMx.Lock()
-	defer b.handlersMx.Unlock()
-
-	id := RandomString(16)
-
-	h := handler{
-		id:          id,
-		handlerType: handlerType,
-		matchType:   matchTypeRegexp,
-		re:          re,
-		handler:     applyMiddlewares(f, m...),
-	}
-
-	b.handlers = append(b.handlers, h)
-
-	return id
-}
-
-func (b *Bot) RegisterHandler(handlerType HandlerType, pattern string, matchType MatchType, f HandlerFunc, m ...Middleware) string {
-	b.handlersMx.Lock()
-	defer b.handlersMx.Unlock()
-
-	id := RandomString(16)
-
-	h := handler{
-		id:          id,
-		handlerType: handlerType,
-		matchType:   matchType,
-		pattern:     pattern,
-		handler:     applyMiddlewares(f, m...),
 	}
 
 	b.handlers = append(b.handlers, h)
