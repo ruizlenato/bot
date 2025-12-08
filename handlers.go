@@ -12,6 +12,7 @@ type HandlerType int
 const (
 	HandlerTypeMessageText HandlerType = iota
 	HandlerTypeCommand
+	HandlerTypeInlineQuery
 	HandlerTypeCallbackQueryData
 	HandlerTypeCallbackQueryGameShortName
 	HandlerTypePhotoCaption
@@ -58,6 +59,11 @@ func (h handler) match(update *models.Update) bool {
 		}
 		data = update.Message.Caption
 		entities = update.Message.CaptionEntities
+	case HandlerTypeInlineQuery:
+		if update.InlineQuery == nil {
+			return false
+		}
+		data = update.InlineQuery.Query
 	}
 
 	switch pattern := h.pattern.(type) {
