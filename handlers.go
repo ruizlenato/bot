@@ -16,6 +16,7 @@ const (
 	HandlerTypeCallbackQueryData
 	HandlerTypeCallbackQueryGameShortName
 	HandlerTypePhotoCaption
+	HandlerTypeInlineSender
 )
 
 type handler struct {
@@ -64,6 +65,11 @@ func (h handler) match(update *models.Update) bool {
 			return false
 		}
 		data = update.InlineQuery.Query
+	case HandlerTypeInlineSender:
+		if update.ChosenInlineResult == nil {
+			return false
+		}
+		return true
 	}
 
 	switch pattern := h.pattern.(type) {
@@ -119,6 +125,22 @@ func (b *Bot) RegisterHandlerMatchFunc(matchFunc MatchFunc, f HandlerFunc, m ...
 
 	b.handlers = append(b.handlers, h)
 
+	return id
+}
+
+func (b *Bot) RegisterHandlerInlineSender(f HandlerFunc, m ...Middleware) string {
+	b.handlersMx.Lock()
+	defer b.handlersMx.Unlock()
+
+	id := RandomString(16)
+
+	h := handler{
+		id:          id,
+		handlerType: HandlerTypeInlineSender,
+		handler:     applyMiddlewares(f, m...),
+	}
+
+	b.handlers = append(b.handlers, h)
 	return id
 }
 
