@@ -86,7 +86,7 @@ type Message struct {
 	ReplyToMessage                *Message                       `json:"reply_to_message,omitempty"`
 	ExternalReply                 *ExternalReplyInfo             `json:"external_reply,omitempty"`
 	Quote                         *TextQuote                     `json:"quote,omitempty"`
-	ReplyToStore                  *Story                         `json:"reply_to_store,omitempty"`
+	ReplyToStory                  *Story                         `json:"reply_to_story,omitempty"`
 	ReplyToChecklistTaskID        int                            `json:"reply_to_checklist_task_id,omitempty"`
 	ViaBot                        *User                          `json:"via_bot,omitempty"`
 	EditDate                      int                            `json:"edit_date,omitempty"`
@@ -172,6 +172,48 @@ type Message struct {
 	VoiceChatParticipantsInvited  *VoiceChatParticipantsInvited  `json:"voice_chat_participants_invited,omitempty"`
 	WebAppData                    *WebAppData                    `json:"web_app_data,omitempty"`
 	ReplyMarkup                   *InlineKeyboardMarkup          `json:"reply_markup,omitempty"`
+}
+
+// MessageOrBoolType represents the type of MessageOrBool
+type MessageOrBoolType int
+
+const (
+	MessageOrBoolTypeMessage MessageOrBoolType = iota
+	MessageOrBoolTypeBool
+)
+
+// MessageOrBool represents a response that can be either a Message or a bool
+// This is used for methods like editMessageText when editing inline messages
+// https://core.telegram.org/bots/api#editmessagetext
+type MessageOrBool struct {
+	Type    MessageOrBoolType
+	Message *Message
+	Bool    bool
+}
+
+func (mob *MessageOrBool) UnmarshalJSON(data []byte) error {
+	var b bool
+	if err := json.Unmarshal(data, &b); err == nil {
+		mob.Type = MessageOrBoolTypeBool
+		mob.Bool = b
+		return nil
+	}
+
+	// If not a bool, try to unmarshal as Message
+	mob.Type = MessageOrBoolTypeMessage
+	mob.Message = &Message{}
+	return json.Unmarshal(data, mob.Message)
+}
+
+func (mob *MessageOrBool) MarshalJSON() ([]byte, error) {
+	switch mob.Type {
+	case MessageOrBoolTypeMessage:
+		return json.Marshal(mob.Message)
+	case MessageOrBoolTypeBool:
+		return json.Marshal(mob.Bool)
+	}
+
+	return nil, fmt.Errorf("unsupported MessageOrBool type")
 }
 
 // PreparedInlineMessage https://core.telegram.org/bots/api#preparedinlinemessage

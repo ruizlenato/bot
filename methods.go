@@ -154,15 +154,15 @@ func (b *Bot) SendLocation(ctx context.Context, params *SendLocationParams) (*mo
 }
 
 // EditMessageLiveLocation https://core.telegram.org/bots/api#editmessagelivelocation
-func (b *Bot) EditMessageLiveLocation(ctx context.Context, params *EditMessageLiveLocationParams) (*models.Message, error) {
-	result := &models.Message{}
+func (b *Bot) EditMessageLiveLocation(ctx context.Context, params *EditMessageLiveLocationParams) (*models.MessageOrBool, error) {
+	result := &models.MessageOrBool{}
 	err := b.rawRequest(ctx, "editMessageLiveLocation", params, result)
 	return result, err
 }
 
 // StopMessageLiveLocation https://core.telegram.org/bots/api#stopmessagelivelocation
-func (b *Bot) StopMessageLiveLocation(ctx context.Context, params *StopMessageLiveLocationParams) (*models.Message, error) {
-	result := &models.Message{}
+func (b *Bot) StopMessageLiveLocation(ctx context.Context, params *StopMessageLiveLocationParams) (*models.MessageOrBool, error) {
+	result := &models.MessageOrBool{}
 	err := b.rawRequest(ctx, "stopMessageLiveLocation", params, result)
 	return result, err
 }
@@ -651,22 +651,22 @@ func (b *Bot) GetMyDefaultAdministratorRights(ctx context.Context, params *GetMy
 }
 
 // EditMessageText https://core.telegram.org/bots/api#editmessagetext
-func (b *Bot) EditMessageText(ctx context.Context, params *EditMessageTextParams) (*models.Message, error) {
-	result := &models.Message{}
+func (b *Bot) EditMessageText(ctx context.Context, params *EditMessageTextParams) (*models.MessageOrBool, error) {
+	result := &models.MessageOrBool{}
 	err := b.rawRequest(ctx, "editMessageText", params, result)
 	return result, err
 }
 
 // EditMessageCaption https://core.telegram.org/bots/api#editmessagecaption
-func (b *Bot) EditMessageCaption(ctx context.Context, params *EditMessageCaptionParams) (*models.Message, error) {
-	result := &models.Message{}
+func (b *Bot) EditMessageCaption(ctx context.Context, params *EditMessageCaptionParams) (*models.MessageOrBool, error) {
+	result := &models.MessageOrBool{}
 	err := b.rawRequest(ctx, "editMessageCaption", params, result)
 	return result, err
 }
 
 // EditMessageMedia https://core.telegram.org/bots/api#editmessagemedia
-func (b *Bot) EditMessageMedia(ctx context.Context, params *EditMessageMediaParams) (*models.Message, error) {
-	result := &models.Message{}
+func (b *Bot) EditMessageMedia(ctx context.Context, params *EditMessageMediaParams) (*models.MessageOrBool, error) {
+	result := &models.MessageOrBool{}
 	err := b.rawRequest(ctx, "editMessageMedia", params, result)
 	return result, err
 }
@@ -679,8 +679,8 @@ func (b *Bot) EditMessageChecklist(ctx context.Context, params *EditMessageCheck
 }
 
 // EditMessageReplyMarkup https://core.telegram.org/bots/api#editmessagereplymarkup
-func (b *Bot) EditMessageReplyMarkup(ctx context.Context, params *EditMessageReplyMarkupParams) (*models.Message, error) {
-	result := &models.Message{}
+func (b *Bot) EditMessageReplyMarkup(ctx context.Context, params *EditMessageReplyMarkupParams) (*models.MessageOrBool, error) {
+	result := &models.MessageOrBool{}
 	err := b.rawRequest(ctx, "editMessageReplyMarkup", params, result)
 	return result, err
 }

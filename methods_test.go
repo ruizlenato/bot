@@ -273,7 +273,8 @@ func TestBot_Methods(t *testing.T) {
 			ChatID: 123,
 		})
 		assertNoErr(t, err)
-		assertEqualString(t, "bar", resp.Text)
+		assertEqualInt(t, int(models.MessageOrBoolTypeMessage), int(resp.Type))
+		assertEqualString(t, "bar", resp.Message.Text)
 	})
 
 	t.Run("StopMessageLiveLocation", func(t *testing.T) {
@@ -285,7 +286,8 @@ func TestBot_Methods(t *testing.T) {
 			ChatID: 123,
 		})
 		assertNoErr(t, err)
-		assertEqualString(t, "bar", resp.Text)
+		assertEqualInt(t, int(models.MessageOrBoolTypeMessage), int(resp.Type))
+		assertEqualString(t, "bar", resp.Message.Text)
 	})
 
 	t.Run("SendVenue", func(t *testing.T) {
@@ -1027,7 +1029,8 @@ func TestBot_Methods(t *testing.T) {
 			ChatID: 123,
 		})
 		assertNoErr(t, err)
-		assertEqualString(t, "foo", resp.Text)
+		assertEqualInt(t, int(models.MessageOrBoolTypeMessage), int(resp.Type))
+		assertEqualString(t, "foo", resp.Message.Text)
 	})
 
 	t.Run("EditMessageCaption", func(t *testing.T) {
@@ -1039,7 +1042,8 @@ func TestBot_Methods(t *testing.T) {
 			ChatID: 123,
 		})
 		assertNoErr(t, err)
-		assertEqualString(t, "foo", resp.Text)
+		assertEqualInt(t, int(models.MessageOrBoolTypeMessage), int(resp.Type))
+		assertEqualString(t, "foo", resp.Message.Text)
 	})
 
 	t.Run("EditMessageMedia", func(t *testing.T) {
@@ -1052,7 +1056,8 @@ func TestBot_Methods(t *testing.T) {
 			Media:  &models.InputMediaPhoto{},
 		})
 		assertNoErr(t, err)
-		assertEqualString(t, "foo", resp.Text)
+		assertEqualInt(t, int(models.MessageOrBoolTypeMessage), int(resp.Type))
+		assertEqualString(t, "foo", resp.Message.Text)
 	})
 
 	t.Run("EditMessageReplyMarkup", func(t *testing.T) {
@@ -1064,7 +1069,8 @@ func TestBot_Methods(t *testing.T) {
 			ChatID: 123,
 		})
 		assertNoErr(t, err)
-		assertEqualString(t, "foo", resp.Text)
+		assertEqualInt(t, int(models.MessageOrBoolTypeMessage), int(resp.Type))
+		assertEqualString(t, "foo", resp.Message.Text)
 	})
 
 	t.Run("StopPoll", func(t *testing.T) {
