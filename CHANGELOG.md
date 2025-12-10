@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.17.1 (2025-12-09)
+
+- feat: add support for inline query handlers
+- refactor: replace MatchType with regex and simplify handler registration
+- fix: handle boolean responses for edit methods and fix field typo
+  - EditMessage* and StopMessageLiveLocation now return `*models.MessageOrBool`
+  - Renamed `ReplyToStore` → `ReplyToStory`
+- fix: proper propagation of context cancellation errors (#213)
+- fix: replace numeric error codes with http constants (#227)
+
 ## v1.17.0 (2025-08-18)
 
 - api 9.2 (#207) 
