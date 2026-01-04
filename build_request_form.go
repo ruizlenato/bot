@@ -112,6 +112,9 @@ func addFormFieldInputFileUpload(form *multipart.Writer, fieldName string, value
 }
 
 func addFormFieldInputMediaItem(form *multipart.Writer, value inputMedia) ([]byte, error) {
+	if value == nil || reflect.ValueOf(value).IsNil() {
+		return nil, fmt.Errorf("nil inputMedia item")
+	}
 	if strings.HasPrefix(value.GetMedia(), "attach://") {
 		filename := strings.TrimPrefix(value.GetMedia(), "attach://")
 		mediaAttachmentField, errCreateMediaAttachmentField := form.CreateFormFile(filename, filename)
