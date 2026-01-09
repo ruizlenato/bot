@@ -115,6 +115,15 @@ func addFormFieldInputMediaItem(form *multipart.Writer, value inputMedia) ([]byt
 	if value == nil || reflect.ValueOf(value).IsNil() {
 		return nil, fmt.Errorf("nil inputMedia item")
 	}
+
+	v := reflect.ValueOf(value)
+	switch v.Kind() {
+	case reflect.Pointer, reflect.Interface, reflect.Slice, reflect.Map, reflect.Chan, reflect.Func:
+		if v.IsNil() {
+			return nil, fmt.Errorf("nil inputMedia item")
+		}
+	}
+
 	if strings.HasPrefix(value.GetMedia(), "attach://") {
 		filename := strings.TrimPrefix(value.GetMedia(), "attach://")
 		mediaAttachmentField, errCreateMediaAttachmentField := form.CreateFormFile(filename, filename)
