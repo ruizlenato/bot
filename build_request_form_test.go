@@ -49,9 +49,9 @@ func Test_buildRequestForm(t *testing.T) {
 		InlineQueryResultInterface: &models.InlineQueryResultArticle{Title: "foo", Description: "bar", InputMessageContent: &models.InputTextMessageContent{MessageText: "foo"}},
 		InputStickerSlice: []models.InputSticker{
 			{
-				Sticker:   "attach://sticker.png",
-				Format:    "foo",
-				EmojiList: []string{"bar"},
+				Sticker:           "attach://sticker.png",
+				Format:            "foo",
+				EmojiList:         []string{"bar"},
 				StickerAttachment: strings.NewReader("sticker file"),
 			},
 			{
@@ -129,4 +129,21 @@ Content-Disposition: form-data; name="input_sticker_slice"
 `
 	assertEqualInt(t, fieldsCount, 7)
 	assertFormData(t, buf.String(), expect)
+}
+
+func Test_buildRequestForm_nilInputFileUpload(t *testing.T) {
+	params := struct {
+		Photo models.InputFile `json:"photo"`
+	}{
+		Photo: (*models.InputFileUpload)(nil),
+	}
+
+	buf := bytes.NewBuffer(nil)
+	form := multipart.NewWriter(buf)
+
+	_, errBuild := buildRequestForm(form, &params)
+	if errBuild == nil {
+		t.Fatal("expected error for nil input file upload")
+	}
+	assertEqualString(t, errBuild.Error(), "nil input file upload for field photo")
 }
