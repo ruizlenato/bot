@@ -1,5 +1,26 @@
 # Changelog
 
+## v1.20.0 (2026-03-05)
+
+- support API 9.5 (March 1, 2026 update)
+  - Added `date_time` support in MessageEntity:
+    - Added `MessageEntityTypeDateTime`
+    - Added `unix_time` and `date_time_format` fields
+  - Added chat member tag support:
+    - Added `setChatMemberTag` params
+    - Added `tag` fields to chat member models
+  - Added tag-related permissions:
+    - Added `can_manage_tags` to admin rights and promote params
+    - Added `can_edit_tag` to chat permissions and restricted members
+  - Added `sender_tag` field to Message
+
+- fixes from upstream PR #263 (excluding #242)
+  - build request form now checks runtime concrete types behind interface fields
+  - fixed reply markup field types for optional behavior and correct API mapping
+
+- fix nil upload panic
+  - prevent panic on nil `InputFileUpload` in form builder
+
 ## v1.19.0 (2026-02-12)
 
 - support API 9.4 (February 9, 2026 update)
